@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Storage Client</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        input[type="file"],
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        input[type="file"]:focus,
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .file-list {
+            margin-top: 15px;
+        }
+        
+        .file-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #667eea;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .file-info {
+            flex: 1;
+        }
+        
+        .file-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .file-meta {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .file-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 12px;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .message {
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>☁️ Cloud Storage Client</h1>
+            <p>Upload, manage, and download your files</p>
+        </div>
+        
+        <div class="content">
+            <!-- Upload Section -->
+            <div class="section">
+                <h2>📤 Upload File</h2>
+                <div id="uploadMessage"></div>
+                <div class="form-group">
+                    <label for="fileInput">Select File:</label>
+                    <input type="file" id="fileInput">
+                </div>
+                <button onclick="uploadFile()">Upload File</button>
+            </div>
+            
+            <!-- Files Section -->
+            <div class="section">
+                <h2>📁 My Files</h2>
+                <button onclick="loadFiles()" class="btn-success btn-small">Refresh List</button>
+                <div id="fileList" class="file-list">
+                    <div class="loading">Click "Refresh List" to load files</div>
+                </div>
+            </div>
+            
+            <!-- Statistics Section -->
+            <div class="section">
+                <h2>📊 Storage Statistics</h2>
+                <button onclick="loadStats()" class="btn-success btn-small">Refresh Stats</button>
+                <div id="stats" class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalFiles">-</div>
+                        <div class="stat-label">Total Files</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalSize">-</div>
+                        <div class="stat-label">Total Size</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        var API_URL = 'http://localhost:3000';
+        
+        function showMessage(elementId, message, type) {
+            var element = document.getElementById(elementId);
+            element.innerHTML = '<div class="message ' + type + '">' + message + '</div>';
+            setTimeout(function() {
+                element.innerHTML = '';
+            }, 5000);
+        }
+        
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            var k = 1024;
+            var sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            var i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+        
+        function uploadFile() {
+            var fileInput = document.getElementById('fileInput');
+            var file = fileInput.files[0];
+            
+            if (!file) {
+                showMessage('uploadMessage', 'Please select a file first', 'error');
+                return;
+            }
+            
+            var formData = new FormData();
+            formData.append('file', file);
+            
+            showMessage('uploadMessage', 'Uploading...', 'success');
+            
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', API_URL + '/upload', true);
+            
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    showMessage('uploadMessage', 'File uploaded successfully! ID: ' + response.file.fileId, 'success');
+                    fileInput.value = '';
+                    loadFiles();
+                    loadStats();
+                } else {
+                    showMessage('uploadMessage', 'Upload failed: ' + xhr.responseText, 'error');
+                }
+            };
+            
+            xhr.onerror = function() {
+                showMessage('uploadMessage', 'Network error. Make sure the server is running.', 'error');
+            };
+            
+            xhr.send(formData);
+        }
+        
+        function loadFiles() {
+            var fileList = document.getElementById('fileList');
+            fileList.innerHTML = '<div class="loading">Loading files...</div>';
+            
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', API_URL + '/list', true);
+            
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    displayFiles(response.result.files);
+                } else {
+                    fileList.innerHTML = '<div class="message error">Failed to load files</div>';
+                }
+            };
+            
+            xhr.onerror = function() {
+                fileList.innerHTML = '<div class="message error">Network error. Make sure the server is running.</div>';
+            };
+            
+            xhr.send();
+        }
+        
+        function displayFiles(files) {
+            var fileList = document.getElementById('fileList');
+            
+            if (files.length === 0) {
+                fileList.innerHTML = '<div class="loading">No files uploaded yet</div>';
+                return;
+            }
+            
+            var html = '';
+            for (var i = 0; i < files.length; i++) {
+                var file = files[i];
+                html += '<div class="file-item">';
+                html += '<div class="file-info">';
+                html += '<div class="file-name">' + file.fileName + '</div>';
+                html += '<div class="file-meta">Size: ' + formatBytes(file.size) + ' | Uploaded: ' + new Date(file.uploadedAt).toLocaleString() + '</div>';
+                html += '</div>';
+                html += '<div class="file-actions">';
+                html += '<button class="btn-small btn-success" onclick="downloadFile(\'' + file.fileId + '\', \'' + file.fileName + '\')">Download</button>';
+                html += '<button class="btn-small btn-danger" onclick="deleteFile(\'' + file.fileId + '\')">Delete</button>';
+                html += '</div>';
+                html += '</div>';
+            }
+            
+            fileList.innerHTML = html;
+        }
+        
+        function downloadFile(fileId, fileName) {
+            var link = document.createElement('a');
+            link.href = API_URL + '/download/' + fileId;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        function deleteFile(fileId) {
+            if (!confirm('Are you sure you want to delete this file?')) {
+                return;
+            }
+            
+            var xhr = new XMLHttpRequest();
+            xhr.open('DELETE', API_URL + '/delete/' + fileId, true);
+            
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    loadFiles();
+                    loadStats();
+                } else {
+                    alert('Failed to delete file');
+                }
+            };
+            
+            xhr.onerror = function() {
+                alert('Network error. Make sure the server is running.');
+            };
+            
+            xhr.send();
+        }
+        
+        function loadStats() {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', API_URL + '/stats', true);
+            
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    var stats = response.stats;
+                    document.getElementById('totalFiles').textContent = stats.totalFiles;
+                    document.getElementById('totalSize').textContent = formatBytes(stats.totalSize);
+                } else {
+                    console.error('Failed to load stats');
+                }
+            };
+            
+            xhr.onerror = function() {
+                console.error('Network error');
+            };
+            
+            xhr.send();
+        }
+        
+        // Load initial data
+        window.onload = function() {
+            loadFiles();
+            loadStats();
+        };
+    </script>
+</body>
+</html>
